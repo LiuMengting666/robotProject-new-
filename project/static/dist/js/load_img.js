@@ -50,7 +50,7 @@ function showImg(input) {
         else
             SohoExamle.Message.add(e.target.result, $("#logout_username").text(),time,'outgoing-message');
         time2 = get_time();
-        var special_ana = ["1.验证码识别 2.汉字识别(只能输入1或者2哦！)"];
+        var special_ana = ["1.验证码识别2.单个汉字识别3.多字识别(只能输入数字1-3哦！)"];
         SohoExamle1.Message.add('小软棉',time2,special_ana[0], '');
 
         // $('form#broadcast').submit(function (event) {

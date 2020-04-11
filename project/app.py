@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 from threading import Lock
+from urllib.parse import urlencode
+
+import urllib3
 from flask import Flask, render_template, session, request, redirect,\
     copy_current_request_context
 from flask_socketio import SocketIO, emit, join_room, leave_room, \
@@ -67,9 +70,9 @@ tuling='3d3fa6b66f72479eaa9c45be57b639e0'  #老师的
 #tuling= 'b9c94835bf924281b681248828c006d1'  #陈鑫的
 api_url = "http://openapi.tuling123.com/openapi/api/v2"
 
-tulinglist = ['3d3fa6b66f72479eaa9c45be57b639e0','e238e5b6de7545fc886720c0d175cb79','b9c94835bf924281b681248828c006d1']
+tulinglist = ['9c5b167eb61e4ae5817c405b931b2415','3d3fa6b66f72479eaa9c45be57b639e0','e238e5b6de7545fc886720c0d175cb79','b9c94835bf924281b681248828c006d1']
 counttuling = 0
-gurl = '3d3fa6b66f72479eaa9c45be57b639e0'
+gurl = '9c5b167eb61e4ae5817c405b931b2415'
 
 @socketio.on('my_broadcast_event', namespace='/test')
 def get_message(message):
@@ -390,6 +393,44 @@ def tran_img_event(message):
              {'username': '匿名用户', 'time1': time1.strftime('%Y-%m-%d %H:%M:%S'),
               'time2': time2.strftime('%Y-%m-%d %H:%M:%S'), 'data': out})
 
+@socketio.on('more_hand_write_event', namespace='/test')
+def tran_img_event(message):
+    img = base64.b64decode(message["data"])
+    file = open('2.png', "wb")
+    file.write(img)
+    file.close()
+    t = time.time()
+    access_token = '24.cbba50e615a3dbbdc0a88e61c5413823.2592000.1589189383.282335-19375767'
+    http = urllib3.PoolManager()
+    url = 'https://aip.baidubce.com/rest/2.0/ocr/v1/general?access_token=' + access_token
+    # f = open('2.png', 'wb')  # 图片的路径
+    # img = base64.b64encode(f.read())
+    imgParam = str(message["data"]).encode('utf-8')
+    param = {'image': imgParam, 'show': 'true'}
+    param = urlencode(param)
+    request = http.request('POST',
+                           url,
+                           body=param,
+                           headers={'Content-Type': 'application/x-www-form-urlencoded'})
+
+    result = eval(str(request.data.decode()))
+    print(result["words_result"][0]["words"])
+
+
+    time1 = datetime.datetime.now()
+    time2 = datetime.datetime.now()
+    str2 = ''
+    out = str2.join(result["words_result"][0]["words"])
+    if (message['check'] != ""):
+        emit('my_response',
+             {'username': '匿名用户', 'time1': time1.strftime('%Y-%m-%d %H:%M:%S'),
+              'time2': time2.strftime('%Y-%m-%d %H:%M:%S'), 'data': out})
+        print(message['data'])
+        recordMysql.record_create(message['check'], message['data'], out, time1, time2)
+    else:
+        emit('my_response',
+             {'username': '匿名用户', 'time1': time1.strftime('%Y-%m-%d %H:%M:%S'),
+              'time2': time2.strftime('%Y-%m-%d %H:%M:%S'), 'data': out})
 
 @socketio.on('map_event', namespace='/test')
 def tran_img_event(message):

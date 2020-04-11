@@ -70,7 +70,7 @@
                     $('#broadcast_data').val('');
                 }
                 else{
-                    var special_ana = ["1.验证码识别2.汉字识别(只能输入1或者2哦！)","请输入地址"];
+                    var special_ana = ["1.验证码识别2.单个汉字识别3.多字识别(只能输入数字1-3哦！)","请输入地址"];
                     var special_que = ["-地图"]
                     //获取人和机器人说的最后一句话
                     var last_robot = "";
@@ -114,7 +114,11 @@
                              cpoy_src = cpoy_src.substring( cpoy_src.indexOf(",")+1);
                              socket.emit('hand_write_event', {data: cpoy_src, userId: '123', check: $("#logout_username").text()})
                          }
-
+                         else if(last_people.replace(re,"")=="3"){
+                             cpoy_src=$(".outgoing-message").eq(-2).children(".message-content1").children("#img_size").attr("src");
+                             cpoy_src = cpoy_src.substring( cpoy_src.indexOf(",")+1);
+                             socket.emit('more_hand_write_event', {data: cpoy_src, userId: '123', check: $("#logout_username").text()})
+                         }
                          else if(last_people.indexOf(special_que[0])) {
                             socket.emit('map_event', {data: last_people.substring(0, last_people.indexOf("-"))});
                             // SohoExamle3.Message.add("hahha", $("#logout_username").text(), time, '');
